@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.autograd as autograd
 import torch.optim as optim
 from tqdm import tqdm
-from .data import Data
+from data import Data
 import xml.etree.ElementTree as ET
 import itertools
 
