@@ -38,6 +38,7 @@ class BHiveDataset(Dataset):
             # BHive throughput files have no header, columns are hex_string, throughput
             df = pd.read_csv(throughput_file, header=None,
                              names=['hex', 'throughput'])
+            df['throughput'] = df['throughput'] / 100  # Normalize throughput
             df.dropna(inplace=True)  # Drop any NaN values
             self.data = df[['hex', 'throughput']].values.tolist()
             print(f"Loaded {len(self.data)} samples from {throughput_file}")
@@ -209,15 +210,6 @@ def test_dataloader():
 if __name__ == '__main__':
     TARGET = os.environ.get("ITHEMAL_TARGET", "skl")
     print("Testing BHive Dataloader...")
-
-    # Initialize the reference Ithemal data object
-    try:
-        ithemal_data_ref = dt.DataInstructionEmbedding()
-        ithemal_data_ref.read_meta_data()
-        print("Ithemal metadata loaded successfully.")
-    except Exception as e:
-        print(f"Failed to load Ithemal metadata: {e}")
-        sys.exit(1)
 
     # Specify the path to a BHive throughput file
     # Make sure this path is correct relative to where you run the script
