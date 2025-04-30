@@ -145,6 +145,9 @@ def predict_raw(verbose):
     line = "4183ff0119c083e00885c98945c4b8010000000f4fc139c2" # Original test.py line
     try:
         datum = datum_of_code(data, line, verbose)
+        
+        print(datum.x)
+        print(datum.y)
 
         print("-" * 30)
         print("Datum Object Structure:")
@@ -193,6 +196,7 @@ def predict_raw(verbose):
             print("  (None)")
 
         print("-" * 30)
+
 
     except FileNotFoundError as e:
         print(f"Error: {e}")
