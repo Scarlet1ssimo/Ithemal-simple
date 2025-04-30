@@ -7,13 +7,15 @@ import os
 import tempfile
 from typing import Dict, FrozenSet, Optional, Tuple, Union
 
-#dynamorio specific encoding details - tokenizing
+# dynamorio specific encoding details - tokenizing
+
+
 def get_opcode_opnd_dict(opcode_start, opnd_start):
     sym_dict = dict()
 
     filename = os.environ['ITHEMAL_HOME'] + '/common/inputs/encoding.h'
 
-    with open(filename,'r') as f:
+    with open(filename, 'r') as f:
         opcode_num = opcode_start
         opnd_num = opnd_start
         for line in f:
@@ -29,10 +31,12 @@ def get_opcode_opnd_dict(opcode_start, opnd_start):
 
     return sym_dict
 
+
 def read_offsets():
-    offsets_filename = os.environ['ITHEMAL_HOME'] + '/common/inputs/offsets.txt'
+    offsets_filename = os.environ['ITHEMAL_HOME'] + \
+        '/common/inputs/offsets.txt'
     offsets = list()
-    with open(offsets_filename,'r') as f:
+    with open(offsets_filename, 'r') as f:
         for line in f:
             for value in line.split(','):
                 offsets.append(int(value))
@@ -40,15 +44,18 @@ def read_offsets():
     assert len(offsets) == 5
     return offsets
 
+
 def get_sym_dict():
 
     offsets = read_offsets()
-    sym_dict = get_opcode_opnd_dict(opcode_start = offsets[0],opnd_start = offsets[1])
+    sym_dict = get_opcode_opnd_dict(
+        opcode_start=offsets[0], opnd_start=offsets[1])
 
     sym_dict[offsets[2]] = 'int_immed'
     sym_dict[offsets[3]] = 'float_immed'
 
     return sym_dict, offsets[4]
+
 
 _REGISTER_ALIASES = (
     {'REG_RAX', 'REG_EAX', 'REG_AX', 'REG_AH', 'REG_AL'},
@@ -68,9 +75,13 @@ _REGISTER_ALIASES = (
     {'REG_R14', 'REG_R14D', 'REG_R14W', 'REG_14L'},
     {'REG_R15', 'REG_R15D', 'REG_R15W', 'REG_15L'},
 )
-_REGISTER_ALIAS_MAP = {reg: regset for regset in _REGISTER_ALIASES for reg in regset}
+_REGISTER_ALIAS_MAP = {
+    reg: regset for regset in _REGISTER_ALIASES for reg in regset}
+
+
 def _get_canonical_operand(op):
     return _REGISTER_ALIAS_MAP.get(_global_sym_dict.get(op, None), op)
+
 
 _REGISTER_CLASSES = tuple(map(frozenset, (
     {'REG_RAX', 'REG_RCX', 'REG_RDX', 'REG_RBX', 'REG_RSP', 'REG_RBP', 'REG_RSI',
@@ -87,6 +98,7 @@ _REGISTER_CLASSES = tuple(map(frozenset, (
      'REG_R14L', 'REG_R15L'},
 )))
 
+
 def get_register_class(reg):
 
     if isinstance(reg, int):
@@ -98,13 +110,15 @@ def get_register_class(reg):
 
     return None
 
-def get_name(val,sym_dict,mem_offset):
+
+def get_name(val, sym_dict, mem_offset):
     if val >= mem_offset:
         return 'mem_' + str(val - mem_offset)
     elif val < 0:
         return 'delim'
     else:
         return sym_dict[val]
+
 
 def get_percentage_error(predicted, actual):
 
@@ -121,10 +135,13 @@ def get_percentage_error(predicted, actual):
 
     return errors
 
-_global_sym_dict, _global_mem_start = get_sym_dict()
-_global_sym_dict_rev = {v:k for (k, v) in _global_sym_dict.items()}
 
-#calculating static properties of instructions and basic blocks
+_global_sym_dict, _global_mem_start = get_sym_dict()
+_global_sym_dict_rev = {v: k for (k, v) in _global_sym_dict.items()}
+
+# calculating static properties of instructions and basic blocks
+
+
 class Instruction:
 
     def __init__(self, opcode, srcs, dsts, num):
@@ -135,7 +152,7 @@ class Instruction:
         self.parents = []
         self.children = []
 
-        #for lstms
+        # for lstms
         self.lstm = None
         self.hidden = None
         self.tokens = None
@@ -144,10 +161,10 @@ class Instruction:
         return Instruction(self.opcode, self.srcs[:], self.dsts[:], self.num)
 
     def print_instr(self):
-        print (self.num, self.opcode, self.srcs, self.dsts)
+        print(self.num, self.opcode, self.srcs, self.dsts)
         num_parents = [parent.num for parent in self.parents]
         num_children = [child.num for child in self.children]
-        print (num_parents, num_children)
+        print(num_parents, num_children)
 
     def __str__(self):
         return self.intel
@@ -157,6 +174,7 @@ class Instruction:
 
     def is_idempotent(self):
         return len(set(self.srcs) & set(self.dsts)) == 0
+
 
 class InstructionReplacer(object):
     def __init__(self, regexp_intel, replacement_intel,
@@ -213,6 +231,7 @@ class InstructionReplacer(object):
 
         return new_instr
 
+
 def _two_way_replacer(opcode):
     return InstructionReplacer(
         r'{}\s+(?P<op1>\w+),\s+(?P<op2>\w+)'.format(opcode),
@@ -220,6 +239,7 @@ def _two_way_replacer(opcode):
         ['{srcs[0]}', '{unused[0]}'],
         ['{unused[0]}'],
     )
+
 
 def _three_way_replacer(opcode):
     return InstructionReplacer(
@@ -229,9 +249,12 @@ def _three_way_replacer(opcode):
         ['{unused[0]}'],
     )
 
+
 replacers = (
-    _two_way_replacer('add'), _two_way_replacer('sub'), _two_way_replacer('and'),
-    _two_way_replacer('or'), _two_way_replacer('xor'), _two_way_replacer('shl'),
+    _two_way_replacer('add'), _two_way_replacer(
+        'sub'), _two_way_replacer('and'),
+    _two_way_replacer('or'), _two_way_replacer(
+        'xor'), _two_way_replacer('shl'),
     _two_way_replacer('shr'), _two_way_replacer('sar'),
     _three_way_replacer('imul'),
 )
@@ -260,7 +283,6 @@ class BasicBlock:
         for instr in self.instrs:
             instr.print_instr()
 
-
     def span_rec(self, n, instr_cost):
 
         if self.span_values[n] != 0:
@@ -277,7 +299,7 @@ class BasicBlock:
             for dst in dsts:
                 found = False
                 for src in dst_instr.srcs:
-                    if(dst == src):
+                    if (dst == src):
                         ret = self.span_rec(i, instr_cost)
                         if span < ret:
                             span = ret
@@ -285,7 +307,8 @@ class BasicBlock:
                         break
                 if found:
                     break
-            dsts = list(set(dsts) - set(dst_instr.dsts)) #remove dead destinations
+            # remove dead destinations
+            dsts = list(set(dsts) - set(dst_instr.dsts))
 
         if src_instr.opcode in instr_cost:
             cost = instr_cost[src_instr.opcode]
@@ -293,11 +316,10 @@ class BasicBlock:
             src_instr.print_instr()
             cost = 1
 
-        #assert cost == 1
+        # assert cost == 1
 
         self.span_values[n] = span + cost
         return self.span_values[n]
-
 
     def find_uses(self, n):
 
@@ -308,7 +330,7 @@ class BasicBlock:
                 if dst in map(_get_canonical_operand, dst_instr.srcs):
                     if not dst_instr in instr.children:
                         instr.children.append(dst_instr)
-                if dst in map(_get_canonical_operand, dst_instr.dsts): #value becomes dead here
+                if dst in map(_get_canonical_operand, dst_instr.dsts):  # value becomes dead here
                     break
 
     def find_defs(self, n):
@@ -350,7 +372,8 @@ class BasicBlock:
     def transitive_closure(self):
         dfs = self.get_dfs()
         for instr in self.instrs:
-            transitive_children = set(n for c in instr.children for n in dfs[c])
+            transitive_children = set(
+                n for c in instr.children for n in dfs[c])
             instr.children = list(transitive_children)
             for child in instr.children:
                 if instr not in child.parents:
@@ -420,8 +443,10 @@ class BasicBlock:
 
         def _gen_reorderings(prefix, schedulable_instructions, mem_q):
             mem_q = mem_q[:]
-            has_pending_mem = any(instr.has_mem() for instr in schedulable_instructions)
-            has_activated_mem = mem_q and all(parent in prefix for parent in mem_q[0].parents)
+            has_pending_mem = any(instr.has_mem()
+                                  for instr in schedulable_instructions)
+            has_activated_mem = mem_q and all(
+                parent in prefix for parent in mem_q[0].parents)
 
             if has_activated_mem and not has_pending_mem:
                 schedulable_instructions.append(mem_q.pop(0))
@@ -430,10 +455,12 @@ class BasicBlock:
                 return [prefix]
 
             reorderings = []
+
             def process_index(i):
                 instr = schedulable_instructions[i]
                 # pop this instruction
-                rest_scheduleable_instructions = schedulable_instructions[:i] + schedulable_instructions[i+1:]
+                rest_scheduleable_instructions = schedulable_instructions[:i] + \
+                    schedulable_instructions[i+1:]
                 rest_prefix = prefix + [instr]
 
                 # add all activated children
@@ -442,7 +469,8 @@ class BasicBlock:
                         if not child.has_mem():
                             rest_scheduleable_instructions.append(child)
 
-                reorderings.extend(_gen_reorderings(rest_prefix, rest_scheduleable_instructions, mem_q))
+                reorderings.extend(_gen_reorderings(
+                    rest_prefix, rest_scheduleable_instructions, mem_q))
 
             if single_perm:
                 process_index(random.randrange(len(schedulable_instructions)))
@@ -527,6 +555,7 @@ class BasicBlock:
             len(self.instrs[-1].parents) == 1
         )
 
+
 def generate_duplicates(instrs, max_n_dups):
     for idx in range(len(instrs) - 1, -1, -1):
         instr = instrs[idx]
@@ -581,7 +610,7 @@ def create_basicblock(tokens):
             mode += 1
             if mode > 2:
                 mode = 0
-                instr = Instruction(opcode,srcs,dsts,len(instrs))
+                instr = Instruction(opcode, srcs, dsts, len(instrs))
                 instrs.append(instr)
                 opcode = None
                 srcs = []
