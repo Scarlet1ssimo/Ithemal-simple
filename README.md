@@ -1,5 +1,7 @@
 ## Training Setup
 
+## Train From Dataset With Tokenizer
+
 ### Build DynamoRIO
 ```
 git clone https://github.com/ithemal/Ithemal.git
@@ -27,9 +29,9 @@ ITHEMAL_TARGET=skl ITHEMAL_HOME=./Ithemal python3 train.py --epochs 200 --batch-
 ```
 
 
-### deserialize the dataset
+## Train From Deserialized dataset
 
-If you happend to obtain `dataset_dump_skl.pkl`, where we cached the tokenizers, you can train with possibly lower CPU pressure.
+If you happend to obtain [`dataset_dump_skl.pkl`](https://uofi.box.com/s/05r8ek8wjaw81mr07xriemskk9qktzhj), where we cached the tokenizers, you can train with possibly lower CPU pressure, and no need to compile tokenizer.
 ```
 ITHEMAL_TARGET=skl ITHEMAL_HOME=./Ithemal python3 train.py --epochs 200 --batch-size 512 --validation-split 0.15 --save-path ./my_models --num-workers=4 --load-model ./my_models/ithemal_bhive_skl_best.pt --save-interval 20 --deserialize
 ```
