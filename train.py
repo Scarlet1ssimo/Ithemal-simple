@@ -6,20 +6,23 @@ import os
 import sys
 import argparse
 import time
-import pickle  # Added for loading vocab map
+import pickle
+from tqdm import tqdm  # Ensure tqdm is imported
 
 # Import necessary components from other files
 import data_cost as dt
 # Use BHive specific dataloader and collate
-from bhive_dataloader import BHiveDataset, collate_fn
+from bhive_dataloader import BHiveDataset, collate_fn  # collate_fn is now updated
 from model import IthemalRNN
-import utilities as ut  # Added for potential utility functions
+import utilities as ut
 
 # --- Configuration ---
-TARGET = os.environ.get("ITHEMAL_TARGET", "skl")  # Get target from env var
+TARGET = os.environ.get("ITHEMAL_TARGET", "skl")
 VOCAB_MAP_FILE = f'vocab_map_{TARGET}.pkl'
 THROUGHPUT_FILE = os.path.join(
     'bhive', 'benchmark', 'throughput', f'{TARGET}.csv')
+# Define padding_idx based on your vocab map or assume 0 if not explicitly defined
+PADDING_IDX = 0
 
 
 def train(args):
@@ -35,6 +38,10 @@ def train(args):
     print(f"Loading vocabulary map from: {VOCAB_MAP_FILE}")
     try:
         token_idx_map_ref = dt.load_token_idx_map(VOCAB_MAP_FILE)
+        # Ensure the vocab map has the padding token if needed, or handle it here
+        if '<pad>' not in token_idx_map_ref.token_to_hot_idx:
+            print(
+                "Warning: '<pad>' token not found in vocab map. Assuming index 0 is padding.")
         vocab_size = len(token_idx_map_ref.token_to_hot_idx)
         print(f"Vocabulary map loaded. Vocabulary size: {vocab_size}")
     except FileNotFoundError:
@@ -49,8 +56,8 @@ def train(args):
     print(f"Loading dataset from: {THROUGHPUT_FILE}")
     try:
         dataset = BHiveDataset(
-            throughput_file=THROUGHPUT_FILE, token_idx_map_ref=token_idx_map_ref, deserialize=True)
-    except SystemExit:  # Catch sys.exit called by BHiveDataset on file error
+            throughput_file=THROUGHPUT_FILE, token_idx_map_ref=token_idx_map_ref, deserialize=args.deserialize)
+    except SystemExit:
         print(f"Exiting due to dataset loading error.")
         sys.exit(1)
     except Exception as e:
@@ -65,7 +72,6 @@ def train(args):
 
     print(f"Dataset loaded. Total samples: {len(dataset)}")
 
-    # Split dataset into training and validation sets
     val_split = args.validation_split
     if not (0 < val_split < 1):
         print("Error: Validation split must be between 0 and 1.")
@@ -83,19 +89,19 @@ def train(args):
     train_dataset, val_dataset = random_split(
         dataset, [train_size, val_size])
 
-    # Create DataLoaders
-    # Note: collate_fn currently returns a list of items. The loop handles this.
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
-                              collate_fn=collate_fn, num_workers=args.num_workers)
-    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False,
-                            collate_fn=collate_fn, num_workers=args.num_workers)
+    # Create DataLoaders with the updated collate_fn
+    train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True,
+                              collate_fn=collate_fn, num_workers=args.num_workers, pin_memory=True if device.type == 'cuda' else False)
+    val_loader = DataLoader(val_dataset, args.batch_size, shuffle=False,
+                            collate_fn=collate_fn, num_workers=args.num_workers, pin_memory=True if device.type == 'cuda' else False)
     print("DataLoaders created.")
 
     # --- Model Initialization ---
     print("Initializing model...")
     model = IthemalRNN(vocab_size=vocab_size,
                        embedding_size=args.embedding_size,
-                       hidden_size=args.hidden_size).to(device)
+                       hidden_size=args.hidden_size,
+                       padding_idx=PADDING_IDX).to(device)
     print(model)
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel()
@@ -104,7 +110,7 @@ def train(args):
     print(f"Trainable Parameters: {trainable_params:,}")
 
     # --- Loss and Optimizer ---
-    criterion = nn.MSELoss()  # Mean Squared Error for regression
+    criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     print(f"Using Loss: {criterion}")
     print(f"Using Optimizer: Adam (lr={args.lr})")
@@ -115,87 +121,70 @@ def train(args):
     best_val_loss = float('inf')
 
     for epoch in range(args.epochs):
-        model.train()  # Set model to training mode
+        model.train()
         epoch_train_loss = 0.0
-        processed_train_items = 0
+        processed_train_samples = 0
 
-        # --- Training Phase ---
         progress_bar = tqdm(
             train_loader, desc=f"Epoch {epoch+1}/{args.epochs} [Train]", leave=False)
-        for batch_data in progress_bar:
-            if batch_data is None:  # Skip empty batches from collate_fn
+        for batch in progress_bar:
+            if batch is None:
                 continue
 
-            batch_loss = 0.0
-            valid_items_in_batch = 0
+            targets = batch['targets'].to(device)
+
             optimizer.zero_grad()
 
-            # Process each item in the batch individually (due to current collate_fn)
-            for item in batch_data:
-                if item is None:  # Should not happen if collate_fn filters, but check anyway
-                    continue
-                target = item.y.to(device)  # Move target tensor to device
+            try:
+                predictions = model(batch)
 
-                try:
-                    # Model forward pass expects a single DataItem
-                    # Move prediction to device
-                    prediction = model(item).to(device)
+                loss = criterion(predictions, targets)
 
-                    loss = criterion(prediction, target)
-                    batch_loss += loss
-                    valid_items_in_batch += 1
-
-                except Exception as e:
-                    print(
-                        f"\nError during training forward pass (Code ID {item.code_id if hasattr(item, 'code_id') else 'N/A'}): {e}")
-                    # Optionally add more debugging info or skip the item
-                    continue  # Skip this item
-
-            # Backpropagate and update weights if any valid items were processed
-            if valid_items_in_batch > 0:
-                avg_batch_loss = batch_loss / valid_items_in_batch
-                avg_batch_loss.backward()
+                loss.backward()
                 optimizer.step()
 
-                epoch_train_loss += avg_batch_loss.item() * valid_items_in_batch
-                processed_train_items += valid_items_in_batch
+                epoch_train_loss += loss.item() * targets.size(0)
+                processed_train_samples += targets.size(0)
                 progress_bar.set_postfix(
-                    batch_loss=f'{avg_batch_loss.item():.4f}')
+                    batch_loss=f'{loss.item():.4f}')
 
-        # --- End of Training Epoch ---
+            except Exception as e:
+                print(f"\nError during training batch processing: {e}")
+                import traceback
+                traceback.print_exc()
+                continue
+
         avg_epoch_train_loss = epoch_train_loss / \
-            processed_train_items if processed_train_items > 0 else 0
+            processed_train_samples if processed_train_samples > 0 else 0
         progress_bar.close()
 
         # --- Validation Phase ---
-        model.eval()  # Set model to evaluation mode
+        model.eval()
         epoch_val_loss = 0.0
-        processed_val_items = 0
+        processed_val_samples = 0
         val_progress_bar = tqdm(
             val_loader, desc=f"Epoch {epoch+1}/{args.epochs} [Val]", leave=False)
 
-        with torch.no_grad():  # Disable gradient calculations for validation
-            for batch_data in val_progress_bar:
-                if batch_data is None:
+        with torch.no_grad():
+            for batch in val_progress_bar:
+                if batch is None:
                     continue
 
-                for item in batch_data:
-                    if item is None:
-                        continue
-                    target = item.y.to(device)
+                targets = batch['targets'].to(device)
 
-                    try:
-                        prediction = model(item).to(device)
-                        loss = criterion(prediction, target)
-                        epoch_val_loss += loss.item()
-                        processed_val_items += 1
-                    except Exception as e:
-                        print(
-                            f"\nError during validation forward pass (Code ID {item.code_id if hasattr(item, 'code_id') else 'N/A'}): {e}")
-                        continue  # Skip this item
+                try:
+                    predictions = model(batch)
+                    loss = criterion(predictions, targets)
+                    epoch_val_loss += loss.item() * targets.size(0)
+                    processed_val_samples += targets.size(0)
+                except Exception as e:
+                    print(f"\nError during validation batch processing: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    continue
 
         avg_epoch_val_loss = epoch_val_loss / \
-            processed_val_items if processed_val_items > 0 else 0
+            processed_val_samples if processed_val_samples > 0 else 0
         val_progress_bar.close()
 
         # --- Epoch Summary ---
@@ -206,7 +195,7 @@ def train(args):
         print(f"  Time Elapsed: {elapsed_time:.2f}s")
         print("-" * 50)
 
-        # --- Save Model Checkpoint (Best Model based on Validation Loss) ---
+        # --- Save Model Checkpoint ---
         if avg_epoch_val_loss < best_val_loss:
             best_val_loss = avg_epoch_val_loss
             if args.save_path:
@@ -217,18 +206,18 @@ def train(args):
                     'epoch': epoch + 1,
                     'model_state_dict': model.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
-                    'loss': avg_epoch_train_loss,  # Save training loss as well
+                    'loss': avg_epoch_train_loss,
                     'val_loss': avg_epoch_val_loss,
                     'vocab_size': vocab_size,
                     'embedding_size': args.embedding_size,
                     'hidden_size': args.hidden_size,
+                    'padding_idx': PADDING_IDX,
                     'target_arch': TARGET,
-                    'args': args  # Save args used for training
+                    'args': args
                 }, save_file)
                 print(
                     f"New best model saved to {save_file} (Val Loss: {best_val_loss:.4f})")
 
-        # Optional: Save checkpoint every N epochs regardless of performance
         if args.save_path and args.save_interval > 0 and (epoch + 1) % args.save_interval == 0:
             save_file_epoch = os.path.join(
                 args.save_path, f"ithemal_bhive_{TARGET}_epoch_{epoch+1}.pt")
@@ -242,6 +231,7 @@ def train(args):
                 'vocab_size': vocab_size,
                 'embedding_size': args.embedding_size,
                 'hidden_size': args.hidden_size,
+                'padding_idx': PADDING_IDX,
                 'target_arch': TARGET,
                 'args': args
             }, save_file_epoch)
@@ -252,55 +242,35 @@ def train(args):
     print(f"Total Training Time: {(end_time - start_time):.2f}s")
     print(f"Best Validation Loss achieved: {best_val_loss:.4f}")
 
-    # --- Optional: Save Final Model (usually the best one is preferred) ---
-    # You might want to remove this or save it with a different name
-    # if args.save_path:
-    #     save_file = os.path.join(args.save_path, f"ithemal_bhive_{TARGET}_final.pt")
-    #     os.makedirs(args.save_path, exist_ok=True)
-    #     torch.save({ ... }, save_file) # Populate with final state if needed
-    #     print(f"Final model state saved to {save_file}")
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description=f"Train Ithemal model on BHive data for TARGET={TARGET}.")
-    # Removed --throughput-file as it's derived from TARGET env var
-    parser.add_argument('--epochs', type=int, default=20,  # Increased default epochs
+    parser.add_argument('--epochs', type=int, default=20,
                         help='Number of training epochs')
-    parser.add_argument('--batch-size', type=int, default=64,  # Adjusted default batch size
-                        help='Number of samples per batch (processed individually in the loop)')
+    parser.add_argument('--batch-size', type=int, default=64,
+                        help='Number of samples per batch')
+    parser.add_argument('--deserialize', action='store_true', default=False,
+                        help='Choose to load data from serialized files')
     parser.add_argument('--lr', type=float, default=0.001,
                         help='Learning rate')
     parser.add_argument('--embedding-size', type=int, default=256,
                         help='Size of token embeddings')
     parser.add_argument('--hidden-size', type=int, default=256,
                         help='Size of LSTM hidden states')
-    parser.add_argument('--num-workers', type=int, default=4,  # Adjusted default workers
+    parser.add_argument('--num-workers', type=int, default=4,
                         help='Number of dataloader workers')
     parser.add_argument('--validation-split', type=float, default=0.2,
-                        help='Fraction of data to use for validation (e.g., 0.2 for 20%)')
-    # parser.add_argument('--log-interval', type=int, default=50, # Replaced by tqdm progress bar
-    #                     help='How many batches to wait before logging training status')
+                        help='Fraction of data to use for validation')
     parser.add_argument('--save-path', type=str, default='trained_models',
                         help='Directory to save model checkpoints')
-    parser.add_argument('--save-interval', type=int, default=0,  # Default 0 means only save best model
+    parser.add_argument('--save-interval', type=int, default=0,
                         help='Save a checkpoint every N epochs (0 to disable, only best model saved)')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='Disable CUDA training even if available')
 
-    # Add tqdm for progress bars
-    try:
-        from tqdm import tqdm
-    except ImportError:
-        print("Warning: tqdm not found. Install it (`pip install tqdm`) for progress bars.")
-        # Define a dummy tqdm if not installed
-
-        def tqdm(iterable, *args, **kwargs):
-            return iterable
-
     args = parser.parse_args()
 
-    # Validate derived throughput file path (optional but good practice)
     if not os.path.exists(THROUGHPUT_FILE):
         print(f"Error: Derived throughput file not found at {THROUGHPUT_FILE}")
         print(

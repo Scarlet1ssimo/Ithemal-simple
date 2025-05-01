@@ -1,79 +1,68 @@
-from typing import NamedTuple
+from typing import NamedTuple, Dict, Any
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.nn.utils.rnn as rnn_utils
 from data_cost import DataItem
 
 
 class IthemalRNN(nn.Module):
-    def __init__(self, vocab_size, embedding_size, hidden_size, num_classes=1):
+    def __init__(self, vocab_size, embedding_size, hidden_size, num_classes=1, padding_idx=0):
         super(IthemalRNN, self).__init__()
         self.embedding_size = embedding_size
         self.hidden_size = hidden_size
         self.num_classes = num_classes
 
-        self.embedding = nn.Embedding(vocab_size, self.embedding_size)
-        self.token_rnn = nn.LSTM(self.embedding_size, self.hidden_size)
-        self.instr_rnn = nn.LSTM(self.hidden_size, self.hidden_size)
+        self.embedding = nn.Embedding(vocab_size, self.embedding_size, padding_idx=padding_idx)
+        self.token_rnn = nn.LSTM(self.embedding_size, self.hidden_size, batch_first=True)
+        self.instr_rnn = nn.LSTM(self.hidden_size, self.hidden_size, batch_first=True)
         self.linear = nn.Linear(self.hidden_size, self.num_classes)
 
-    def forward(self, item: DataItem):
-        # Determine the device from the model's parameters
+    def forward(self, batch: Dict[str, Any]):
         device = self.embedding.weight.device
+        batch_size = len(batch['instruction_lengths'])
 
-        token_output_map = {}
-        token_state_map = {}
-        for instr, token_inputs in zip(item.block.instrs, item.x):
-            # Ensure initial state is on the correct device
-            token_state = self.get_init(device)
-            # Move input tensor to the correct device before embedding
-            tokens = self.embedding(
-                torch.LongTensor(token_inputs).to(device)).unsqueeze(1)
-            # LSTM expects input and hidden states on the same device
-            output, state = self.token_rnn(tokens, token_state)
-            token_output_map[instr] = output
-            token_state_map[instr] = state
+        padded_tokens = batch['padded_tokens'].to(device)
+        token_lengths = batch['token_lengths'].to(device)
+        instruction_lengths = batch['instruction_lengths']
+        targets = batch['targets'].to(device)
+        instr_boundaries = batch['instr_boundaries']
 
-        # Stack the outputs (which are already on the correct device)
-        instr_chain = torch.stack([token_output_map[instr][-1]
-                                  for instr in item.block.instrs])
-        # Ensure initial state for the second LSTM is also on the correct device
-        return self.pred_of_instr_chain(instr_chain, device)
+        embedded_tokens = self.embedding(padded_tokens)
 
-    def pred_of_instr_chain(self, instr_chain, device):
-        # Ensure initial state is on the correct device
-        _, final_state_packed = self.instr_rnn(
-            instr_chain, self.get_init(device))
-        final_state = final_state_packed[0]
+        packed_tokens = rnn_utils.pack_padded_sequence(embedded_tokens, token_lengths.cpu(), batch_first=True, enforce_sorted=False)
 
-        # Linear layer input and weights are already on the correct device
-        return self.linear(final_state.squeeze()).squeeze()
+        total_instrs = padded_tokens.size(0)
+        token_init_state = self.get_init(total_instrs, device)
+        packed_output, (token_final_hidden, _) = self.token_rnn(packed_tokens, token_init_state)
 
-    # Modify get_init to accept and use the device
-    def get_init(self, device):
+        instr_inputs = token_final_hidden.squeeze(0)
+
+        block_instr_inputs = []
+        for i in range(batch_size):
+            start = instr_boundaries[i]
+            end = instr_boundaries[i+1]
+            block_instr_inputs.append(instr_inputs[start:end])
+
+        padded_instr_inputs = rnn_utils.pad_sequence(block_instr_inputs, batch_first=True, padding_value=0.0)
+
+        packed_instr_inputs = rnn_utils.pack_padded_sequence(padded_instr_inputs, instruction_lengths.cpu(), batch_first=True, enforce_sorted=True)
+
+        instr_init_state = self.get_init(batch_size, device)
+        _, (instr_final_hidden, _) = self.instr_rnn(packed_instr_inputs, instr_init_state)
+
+        final_block_representation = instr_final_hidden.squeeze(0)
+        output = self.linear(final_block_representation).squeeze(-1)
+
+        return output
+
+    def get_init(self, batch_size, device):
         return (
-            # Create parameters directly on the specified device
-            torch.zeros(1, 1, self.hidden_size,
-                        requires_grad=True, device=device),
-            torch.zeros(1, 1, self.hidden_size,
-                        requires_grad=True, device=device),
+            torch.zeros(1, batch_size, self.hidden_size, requires_grad=True, device=device),
+            torch.zeros(1, batch_size, self.hidden_size, requires_grad=True, device=device),
         )
 
 
 if __name__ == '__main__':
-    # Example usage
-    model = IthemalRNN(628, 256, 256)
-    print("-" * 50)
-    print("Model Structure:")
-    print(model)
-    print("-" * 50)
-
-    # Calculate and print total parameters
-    total_params = sum(p.numel() for p in model.parameters())
-    print(f"Total Parameters: {total_params:,}")
-
-    # Calculate and print trainable parameters
-    trainable_params = sum(p.numel()
-                           for p in model.parameters() if p.requires_grad)
-    print(f"Trainable Parameters: {trainable_params:,}")
-    print("-" * 50)
+    print("Model definition updated for batch processing.")
+    print("Run train.py for a functional example.")

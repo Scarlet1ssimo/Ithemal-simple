@@ -9,6 +9,7 @@ import data_cost as dt
 import utilities as ut
 import pickle
 from tqdm import tqdm
+import torch.nn.utils.rnn as rnn_utils  # Add this import
 
 if 'ITHEMAL_HOME' not in os.environ or not os.path.isdir(os.environ['ITHEMAL_HOME']):
     print("Error: ITHEMAL_HOME is not set or points to an invalid directory.")
@@ -145,24 +146,45 @@ def collate_fn(batch):
     """
     Collate function to handle variable length sequences and None items.
     Filters out None items resulting from errors in __getitem__.
-    Pads token sequences (x) to the maximum length in the batch.
+    Pads token sequences (x) and instruction sequences.
     """
     # Filter out None items
     batch = [item for item in batch if item is not None]
     if not batch:
         return None  # Return None if the batch is empty after filtering
 
-    # Find max sequence length (number of tokens in the longest instruction)
-    # max_len = 0
-    # for item in batch:
-    #     for instr_tokens in item.x:
-    #         max_len = max(max_len, len(instr_tokens))
+    # Sort batch by number of instructions (required for packing) - descending order
+    batch.sort(key=lambda item: len(item.block.instrs), reverse=True)
 
-    # Padding is complex with nested LSTMs and variable instructions per block.
-    # The original Ithemal likely processes one block at a time or uses specific padding/packing.
-    # For simplicity, we'll return the list of valid DataItems and the training loop
-    # will process them individually (effectively batch_size=1 at the model level).
-    return batch
+    # --- Prepare data for batching ---
+    targets = torch.tensor([item.y.item() for item in batch], dtype=torch.float32)
+    instruction_lengths = torch.tensor([len(item.block.instrs) for item in batch], dtype=torch.long)
+    max_instr_len = instruction_lengths[0].item()  # Max instructions in this batch
+
+    # --- Pad token sequences ---
+    # We need to pad tokens for *all* instructions across the batch
+    all_token_sequences = []
+    token_lengths = []  # Length of each instruction's token sequence
+    instr_boundaries = [0]  # Track where each basic block's instructions start in the flattened list
+    current_boundary = 0
+    for item in batch:
+        for instr_tokens in item.x:
+            all_token_sequences.append(torch.tensor(instr_tokens, dtype=torch.long))
+            token_lengths.append(len(instr_tokens))
+        current_boundary += len(item.block.instrs)
+        instr_boundaries.append(current_boundary)
+
+    # Pad the token sequences for all instructions
+    padded_tokens = rnn_utils.pad_sequence(all_token_sequences, batch_first=True, padding_value=0)  # Assuming 0 is the padding index
+    token_lengths = torch.tensor(token_lengths, dtype=torch.long)
+
+    return {
+        'padded_tokens': padded_tokens,  # (total_instrs_in_batch, max_token_len)
+        'token_lengths': token_lengths,  # (total_instrs_in_batch,)
+        'instruction_lengths': instruction_lengths,  # (batch_size,) - how many instructions per item
+        'instr_boundaries': instr_boundaries,  # To reconstruct instruction outputs per block
+        'targets': targets  # (batch_size,)
+    }
 
 
 # Example usage (optional, for testing the dataloader)
