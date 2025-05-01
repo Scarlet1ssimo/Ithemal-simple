@@ -16,6 +16,19 @@ from bhive_dataloader import BHiveDataset, collate_fn  # collate_fn is now updat
 from model import IthemalRNN
 import utilities as ut
 
+# --- Custom Loss Function ---
+
+
+def mape_loss(predictions, targets, epsilon=1e-8):
+    """Calculates Mean Absolute Percentage Error, handling potential division by zero."""
+    # Ensure targets are not zero or very close to zero
+    # Add epsilon to the denominator to avoid division by zero
+    # Use torch.abs for absolute difference
+    absolute_percentage_error = torch.abs(
+        (predictions - targets) / (targets + epsilon))
+    return torch.mean(absolute_percentage_error)
+
+
 # --- Configuration ---
 TARGET = os.environ.get("ITHEMAL_TARGET", "skl")
 VOCAB_MAP_FILE = f'vocab_map_{TARGET}.pkl'
@@ -102,6 +115,85 @@ def train(args):
                        embedding_size=args.embedding_size,
                        hidden_size=args.hidden_size,
                        padding_idx=PADDING_IDX).to(device)
+
+    # --- Loss and Optimizer ---
+    # Replace MSELoss with the custom MAPE loss function
+    criterion = mape_loss
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    # Updated print statement
+    print(f"Using Loss: MAPE (|pred-actual|/actual)")
+    print(f"Using Optimizer: Adam (lr={args.lr})")
+
+    start_epoch = 0
+    if args.load_model:
+        if os.path.exists(args.load_model):
+            print(f"Loading model checkpoint from: {args.load_model}")
+            # Explicitly set weights_only=False to load the full checkpoint, including argparse.Namespace
+            # Ensure you trust the source of this checkpoint file.
+            checkpoint = torch.load(
+                args.load_model, map_location=device, weights_only=False)
+
+            # --- Parameter Verification (Optional but Recommended) ---
+            loaded_args = checkpoint.get('args')
+            loaded_vocab_size = checkpoint.get('vocab_size')
+            loaded_embedding_size = checkpoint.get('embedding_size')
+            loaded_hidden_size = checkpoint.get('hidden_size')
+            loaded_padding_idx = checkpoint.get(
+                'padding_idx', 0)  # Default to 0 if not saved
+
+            mismatched_params = []
+            if loaded_vocab_size is not None and loaded_vocab_size != vocab_size:
+                mismatched_params.append(
+                    f"Vocab Size (loaded {loaded_vocab_size}, current {vocab_size})")
+            if loaded_embedding_size is not None and loaded_embedding_size != args.embedding_size:
+                mismatched_params.append(
+                    f"Embedding Size (loaded {loaded_embedding_size}, current {args.embedding_size})")
+            if loaded_hidden_size is not None and loaded_hidden_size != args.hidden_size:
+                mismatched_params.append(
+                    f"Hidden Size (loaded {loaded_hidden_size}, current {args.hidden_size})")
+            if loaded_padding_idx != PADDING_IDX:
+                mismatched_params.append(
+                    f"Padding Index (loaded {loaded_padding_idx}, current {PADDING_IDX})")
+
+            if mismatched_params:
+                print(
+                    "\nWarning: Mismatch between loaded model parameters and current arguments:")
+                for param in mismatched_params:
+                    print(f"  - {param}")
+                print(
+                    "Proceeding with loaded model structure, but this might lead to issues.\n")
+                # Re-initialize model with loaded parameters if there's a mismatch
+                model = IthemalRNN(vocab_size=loaded_vocab_size or vocab_size,  # Prioritize loaded if available
+                                   embedding_size=loaded_embedding_size or args.embedding_size,
+                                   hidden_size=loaded_hidden_size or args.hidden_size,
+                                   padding_idx=loaded_padding_idx).to(device)
+
+            model.load_state_dict(checkpoint['model_state_dict'])
+            print("Model state loaded successfully.")
+
+            # Optionally load optimizer state and starting epoch
+            if 'optimizer_state_dict' in checkpoint and not args.reset_optimizer:
+                try:
+                    optimizer.load_state_dict(
+                        checkpoint['optimizer_state_dict'])
+                    print("Optimizer state loaded successfully.")
+                except ValueError as e:
+                    print(
+                        f"Warning: Could not load optimizer state, possibly due to parameter mismatch: {e}. Starting with a fresh optimizer.")
+            if 'epoch' in checkpoint and not args.reset_epoch:
+                start_epoch = checkpoint['epoch']  # Start from the next epoch
+                print(f"Resuming training from epoch {start_epoch + 1}")
+            if 'val_loss' in checkpoint:
+                best_val_loss = checkpoint['val_loss']
+                print(
+                    f"Loaded previous best validation loss: {best_val_loss:.4f}")
+
+        else:
+            print(
+                f"Warning: Checkpoint file not found at {args.load_model}. Training from scratch.")
+    else:
+        print("No checkpoint specified. Training from scratch.")
+
     print(model)
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel()
@@ -109,18 +201,12 @@ def train(args):
     print(f"Total Parameters: {total_params:,}")
     print(f"Trainable Parameters: {trainable_params:,}")
 
-    # --- Loss and Optimizer ---
-    criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    print(f"Using Loss: {criterion}")
-    print(f"Using Optimizer: Adam (lr={args.lr})")
-
     # --- Training Loop ---
-    print("Starting training...")
+    print(f"Starting training from epoch {start_epoch + 1}...")
     start_time = time.time()
     best_val_loss = float('inf')
 
-    for epoch in range(args.epochs):
+    for epoch in range(start_epoch, args.epochs):  # Start loop from start_epoch
         model.train()
         epoch_train_loss = 0.0
         processed_train_samples = 0
@@ -268,6 +354,12 @@ if __name__ == "__main__":
                         help='Save a checkpoint every N epochs (0 to disable, only best model saved)')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='Disable CUDA training even if available')
+    parser.add_argument('--load-model', type=str, default=None,
+                        help='Path to a pre-trained model checkpoint to load and continue training')
+    parser.add_argument('--reset-optimizer', action='store_true', default=False,
+                        help='Do not load optimizer state from checkpoint, start fresh')
+    parser.add_argument('--reset-epoch', action='store_true', default=False,
+                        help='Do not resume epoch count from checkpoint, start from epoch 0')
 
     args = parser.parse_args()
 
