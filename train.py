@@ -49,7 +49,7 @@ def train(args):
     print(f"Loading dataset from: {THROUGHPUT_FILE}")
     try:
         dataset = BHiveDataset(
-            throughput_file=THROUGHPUT_FILE, token_idx_map_ref=token_idx_map_ref)
+            throughput_file=THROUGHPUT_FILE, token_idx_map_ref=token_idx_map_ref, deserialize=True)
     except SystemExit:  # Catch sys.exit called by BHiveDataset on file error
         print(f"Exiting due to dataset loading error.")
         sys.exit(1)

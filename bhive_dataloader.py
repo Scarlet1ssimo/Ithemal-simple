@@ -20,12 +20,13 @@ _fake_intel = '\n'*500  # From test.py
 
 
 class BHiveDataset(Dataset):
-    def __init__(self, throughput_file: str, token_idx_map_ref: dt.DataInstructionEmbedding):
+    def __init__(self, throughput_file: str, token_idx_map_ref: dt.DataInstructionEmbedding, deserialize=False, dump=False):
         """
         Args:
             throughput_file (string): Path to the BHive throughput CSV file (e.g., skl.csv).
             ithemal_data_ref (dt.DataInstructionEmbedding): Reference Ithemal data object for metadata.
         """
+        self.deserialize = deserialize
         self.new_embedding = False
         if token_idx_map_ref:
             self.token_idx_map = token_idx_map_ref
@@ -36,12 +37,40 @@ class BHiveDataset(Dataset):
         self.data = []
         try:
             # BHive throughput files have no header, columns are hex_string, throughput
+            if self.deserialize:
+                # Deserialize the data
+                with open(f"dataset_dump_{TARGET}.pkl", 'rb') as f:
+                    self.data = pickle.load(f)
+                print(f"Loaded {len(self.data)} samples from dataset dump.")
+                return
             df = pd.read_csv(throughput_file, header=None,
                              names=['hex', 'throughput'])
             df['throughput'] = df['throughput'] / 100  # Normalize throughput
             df.dropna(inplace=True)  # Drop any NaN values
             self.data = df[['hex', 'throughput']].values.tolist()
             print(f"Loaded {len(self.data)} samples from {throughput_file}")
+            if dump:
+                for i, (hex_string, throughput) in tqdm(enumerate(self.data)):
+                    try:
+                        # Use datum_of_code logic (adapted from test.py)
+                        datum = self._datum_of_code_internal(
+                            hex_string, verbose=False)  # verbose=False for training
+                        # Set the target value (throughput)
+                        datum.y = torch.tensor(throughput, dtype=torch.float32)
+                        self.data[i] = datum
+                    except (FileNotFoundError, PermissionError, subprocess.CalledProcessError, ValueError) as e:
+                        print(
+                            f"Warning: Skipping sample {i} (hex: {hex_string[:20]}...) due to error: {e}")
+                        # Return None or raise an error that the collate_fn can handle
+                        return None
+                    except Exception as e:
+                        print(
+                            f"Warning: Skipping sample {i} (hex: {hex_string[:20]}...) due to unexpected error: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        return None
+                with open(f"dataset_dump_{TARGET}.pkl", 'wb') as f:
+                    pickle.dump(self.data, f)
         except FileNotFoundError:
             print(f"Error: Throughput file not found at {throughput_file}")
             sys.exit(1)
@@ -53,6 +82,8 @@ class BHiveDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx) -> dt.DataItem:
+        if self.deserialize:
+            return self.data[idx]
         hex_string, throughput = self.data[idx]
 
         try:
@@ -98,16 +129,16 @@ class BHiveDataset(Dataset):
         intel = _fake_intel
 
         # Use a temporary copy of the data object to avoid race conditions if using multiprocessing
-        self.token_idx_map.raw_data = [(-1, -1, intel, xml)]
-        self.token_idx_map.data = []
         if self.new_embedding:
+            self.token_idx_map.raw_data = [(-1, -1, intel, xml)]
+            self.token_idx_map.data = []
             self.token_idx_map.prepare_data(fixed=False, progress=False)
-        else:
-            self.token_idx_map.prepare_data(fixed=True, progress=False)
-        if not self.token_idx_map.data:
-            raise ValueError("prepare_data did not produce any DataItem.")
+            if not self.token_idx_map.data:
+                raise ValueError("prepare_data did not produce any DataItem.")
 
-        return self.token_idx_map.data[-1]
+            return self.token_idx_map.data[-1]
+        else:
+            return self.token_idx_map.process_data([(-1, -1, intel, xml)])[-1]
 
 
 def collate_fn(batch):
@@ -164,9 +195,14 @@ def create_map():
         pickle.dump(dataset.token_idx_map.dump_dataset_params(), f)
 
 
+def dump():
+    dataset = BHiveDataset(
+        throughput_file=throughput_file_path, token_idx_map_ref=dt.load_token_idx_map(f'vocab_map_{TARGET}.pkl'), deserialize=False, dump=True)
+
+
 def test_dataloader():
     dataset = BHiveDataset(
-        throughput_file=throughput_file_path, token_idx_map_ref=dt.load_token_idx_map(f'vocab_map_{TARGET}.pkl'))
+        throughput_file=throughput_file_path, token_idx_map_ref=dt.load_token_idx_map(f'vocab_map_{TARGET}.pkl'), deserialize=True)
 
     print("Token_idx_map before processing:")
     print(dataset.token_idx_map.dump_dataset_params())
@@ -207,8 +243,8 @@ def test_dataloader():
     # print(dataset.token_idx_map.dump_dataset_params())
 
 
+TARGET = os.environ.get("ITHEMAL_TARGET", "skl")
 if __name__ == '__main__':
-    TARGET = os.environ.get("ITHEMAL_TARGET", "skl")
     print("Testing BHive Dataloader...")
 
     # Specify the path to a BHive throughput file
@@ -226,6 +262,8 @@ if __name__ == '__main__':
     if sys.argv[1] == "create_map":
         # Create dataset instance
         create_map()
+    elif sys.argv[1] == "dump":
+        dump()
     else:
         # Test the dataloader with an existing token index map
         test_dataloader()
