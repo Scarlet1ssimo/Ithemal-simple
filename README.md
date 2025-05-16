@@ -35,3 +35,10 @@ If you happend to obtain [`dataset_dump_skl.pkl`](https://uofi.box.com/s/05r8ek8
 ```
 ITHEMAL_TARGET=skl ITHEMAL_HOME=./Ithemal python3 train.py --epochs 200 --batch-size 512 --validation-split 0.15 --save-path ./my_models --num-workers=4 --load-model ./my_models/ithemal_bhive_skl_best.pt --save-interval 20 --deserialize
 ```
+
+## Results
+
+![llvm_mca](llvm_mca_vs_actual_heatmap.png)
+![out model](model_vs_actual_heatmap.png)
+
+![alt text](loss_curve.png)

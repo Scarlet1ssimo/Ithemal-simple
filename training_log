@@ -1,0 +1,942 @@
+muchenx2@jupyter-muchenx2:~/Ithemal-simple$ ITHEMAL_TARGET=skl ITHEMAL_HOME=./Ithemal python3 train.py --epochs 200 --batch-size 512 --validation-split 0.15 --save-path ./my_models --num-workers=4 --save-interval 20 --deserialize
+Using device: cuda
+Using Target Architecture (TARGET): skl
+Loading vocabulary map from: vocab_map_skl.pkl
+Warning: '<pad>' token not found in vocab map. Assuming index 0 is padding.
+Vocabulary map loaded. Vocabulary size: 521
+Loading dataset from: bhive/benchmark/throughput/skl.csv
+Loaded 314876 samples from dataset dump.
+Dataset loaded. Total samples: 314876
+Splitting dataset: Train=267645, Validation=47231
+DataLoaders created.
+Initializing model...
+Using Loss: MAPE (|pred-actual|/actual)
+Using Optimizer: Adam (lr=0.001)
+No checkpoint specified. Training from scratch.
+IthemalRNN(
+  (embedding): Embedding(521, 256, padding_idx=0)
+  (token_rnn): LSTM(256, 256, batch_first=True)
+  (instr_rnn): LSTM(256, 256, batch_first=True)
+  (linear): Linear(in_features=256, out_features=1, bias=True)
+)
+Total Parameters: 1,186,305
+Trainable Parameters: 1,186,305
+Starting training from epoch 1...
+Epoch 1/200 Summary:                                                                                                                                                                                                                                                                                              
+  Avg Training Loss: 0.1885
+  Avg Validation Loss: 0.1484
+  Time Elapsed: 34.67s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1484)
+Epoch 2/200 Summary:                                                                                                                                                                                                                                                                                              
+  Avg Training Loss: 0.1390
+  Avg Validation Loss: 0.1324
+  Time Elapsed: 69.57s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1324)
+Epoch 3/200 Summary:                                                                                                                                                                                                                                                                                              
+  Avg Training Loss: 0.1290
+  Avg Validation Loss: 0.1249
+  Time Elapsed: 106.11s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1249)
+Epoch 4/200 Summary:                                                                                                                                                                                                                                                                                              
+  Avg Training Loss: 0.1237
+  Avg Validation Loss: 0.1226
+  Time Elapsed: 142.17s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1226)
+Epoch 5/200 Summary:                                                                                                                                                                                                                                                                                              
+  Avg Training Loss: 0.1198
+  Avg Validation Loss: 0.1195
+  Time Elapsed: 179.08s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1195)
+Epoch 6/200 Summary:                                                                                                                                                                                                                                                                                              
+  Avg Training Loss: 0.1163
+  Avg Validation Loss: 0.1166
+  Time Elapsed: 215.05s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1166)
+Epoch 7/200 Summary:                                                                                                                                                                                                                                                                                              
+  Avg Training Loss: 0.1126
+  Avg Validation Loss: 0.1113
+  Time Elapsed: 250.66s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1113)
+Epoch 8/200 Summary:                                                                                                                                                                                                                                                                                              
+  Avg Training Loss: 0.1080
+  Avg Validation Loss: 0.1070
+  Time Elapsed: 286.88s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1070)
+Epoch 9/200 Summary:                                                                                                                                                                                                                                                                                              
+  Avg Training Loss: 0.1058
+  Avg Validation Loss: 0.1072
+  Time Elapsed: 323.57s
+--------------------------------------------------
+Epoch 10/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.1037
+  Avg Validation Loss: 0.1079
+  Time Elapsed: 359.44s
+--------------------------------------------------
+Epoch 11/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.1018
+  Avg Validation Loss: 0.1061
+  Time Elapsed: 395.66s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1061)
+Epoch 12/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0997
+  Avg Validation Loss: 0.1023
+  Time Elapsed: 431.95s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1023)
+Epoch 13/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0980
+  Avg Validation Loss: 0.1017
+  Time Elapsed: 467.28s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1017)
+Epoch 14/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0961
+  Avg Validation Loss: 0.1008
+  Time Elapsed: 503.09s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.1008)
+Epoch 15/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0944
+  Avg Validation Loss: 0.0996
+  Time Elapsed: 539.58s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0996)
+Epoch 16/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0923
+  Avg Validation Loss: 0.0972
+  Time Elapsed: 576.74s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0972)
+Epoch 17/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0911
+  Avg Validation Loss: 0.0968
+  Time Elapsed: 613.13s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0968)
+Epoch 18/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0894
+  Avg Validation Loss: 0.0959
+  Time Elapsed: 648.56s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0959)
+Epoch 19/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0879
+  Avg Validation Loss: 0.0953
+  Time Elapsed: 683.54s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0953)
+Epoch 20/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0868
+  Avg Validation Loss: 0.0936
+  Time Elapsed: 720.31s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0936)
+Epoch 20 checkpoint saved to ./my_models/ithemal_bhive_skl_epoch_20.pt
+Epoch 21/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0856
+  Avg Validation Loss: 0.0928
+  Time Elapsed: 756.59s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0928)
+Epoch 22/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0842
+  Avg Validation Loss: 0.0916
+  Time Elapsed: 792.04s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0916)
+Epoch 23/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0830
+  Avg Validation Loss: 0.0918
+  Time Elapsed: 827.35s
+--------------------------------------------------
+Epoch 24/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0817
+  Avg Validation Loss: 0.0923
+  Time Elapsed: 863.07s
+--------------------------------------------------
+Epoch 25/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0803
+  Avg Validation Loss: 0.0907
+  Time Elapsed: 900.24s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0907)
+Epoch 26/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0793
+  Avg Validation Loss: 0.0900
+  Time Elapsed: 937.75s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0900)
+Epoch 27/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0785
+  Avg Validation Loss: 0.0901
+  Time Elapsed: 973.26s
+--------------------------------------------------
+Epoch 28/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0776
+  Avg Validation Loss: 0.0901
+  Time Elapsed: 1009.22s
+--------------------------------------------------
+Epoch 29/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0767
+  Avg Validation Loss: 0.0907
+  Time Elapsed: 1044.84s
+--------------------------------------------------
+Epoch 30/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0758
+  Avg Validation Loss: 0.0886
+  Time Elapsed: 1080.18s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0886)
+Epoch 31/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0750
+  Avg Validation Loss: 0.0890
+  Time Elapsed: 1115.80s
+--------------------------------------------------
+Epoch 32/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0740
+  Avg Validation Loss: 0.0882
+  Time Elapsed: 1151.16s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0882)
+Epoch 33/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0728
+  Avg Validation Loss: 0.0877
+  Time Elapsed: 1186.34s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0877)
+Epoch 34/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0721
+  Avg Validation Loss: 0.0872
+  Time Elapsed: 1222.08s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0872)
+Epoch 35/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0715
+  Avg Validation Loss: 0.0881
+  Time Elapsed: 1258.25s
+--------------------------------------------------
+Epoch 36/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0705
+  Avg Validation Loss: 0.0878
+  Time Elapsed: 1295.87s
+--------------------------------------------------
+Epoch 37/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0701
+  Avg Validation Loss: 0.0871
+  Time Elapsed: 1331.10s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0871)
+Epoch 38/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0694
+  Avg Validation Loss: 0.0877
+  Time Elapsed: 1368.23s
+--------------------------------------------------
+Epoch 39/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0687
+  Avg Validation Loss: 0.0870
+  Time Elapsed: 1405.75s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0870)
+Epoch 40/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0679
+  Avg Validation Loss: 0.0875
+  Time Elapsed: 1442.91s
+--------------------------------------------------
+Epoch 40 checkpoint saved to ./my_models/ithemal_bhive_skl_epoch_40.pt
+Epoch 41/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0675
+  Avg Validation Loss: 0.0865
+  Time Elapsed: 1478.76s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0865)
+Epoch 42/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0668
+  Avg Validation Loss: 0.0870
+  Time Elapsed: 1515.25s
+--------------------------------------------------
+Epoch 43/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0662
+  Avg Validation Loss: 0.0879
+  Time Elapsed: 1551.83s
+--------------------------------------------------
+Epoch 44/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0657
+  Avg Validation Loss: 0.0870
+  Time Elapsed: 1589.00s
+--------------------------------------------------
+Epoch 45/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0650
+  Avg Validation Loss: 0.0871
+  Time Elapsed: 1626.06s
+--------------------------------------------------
+Epoch 46/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0645
+  Avg Validation Loss: 0.0867
+  Time Elapsed: 1662.01s
+--------------------------------------------------
+Epoch 47/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0640
+  Avg Validation Loss: 0.0866
+  Time Elapsed: 1699.77s
+--------------------------------------------------
+Epoch 48/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0635
+  Avg Validation Loss: 0.0865
+  Time Elapsed: 1737.51s
+--------------------------------------------------
+Epoch 49/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0630
+  Avg Validation Loss: 0.0868
+  Time Elapsed: 1775.76s
+--------------------------------------------------
+Epoch 50/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0626
+  Avg Validation Loss: 0.0866
+  Time Elapsed: 1814.25s
+--------------------------------------------------
+Epoch 51/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0621
+  Avg Validation Loss: 0.0863
+  Time Elapsed: 1851.39s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0863)
+Epoch 52/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0616
+  Avg Validation Loss: 0.0877
+  Time Elapsed: 1887.90s
+--------------------------------------------------
+Epoch 53/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0611
+  Avg Validation Loss: 0.0870
+  Time Elapsed: 1925.18s
+--------------------------------------------------
+Epoch 54/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0608
+  Avg Validation Loss: 0.0871
+  Time Elapsed: 1961.49s
+--------------------------------------------------
+Epoch 55/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0603
+  Avg Validation Loss: 0.0870
+  Time Elapsed: 1997.52s
+--------------------------------------------------
+Epoch 56/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0598
+  Avg Validation Loss: 0.0865
+  Time Elapsed: 2033.66s
+--------------------------------------------------
+Epoch 57/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0596
+  Avg Validation Loss: 0.0869
+  Time Elapsed: 2069.55s
+--------------------------------------------------
+Epoch 58/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0590
+  Avg Validation Loss: 0.0864
+  Time Elapsed: 2104.85s
+--------------------------------------------------
+Epoch 59/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0585
+  Avg Validation Loss: 0.0869
+  Time Elapsed: 2140.57s
+--------------------------------------------------
+Epoch 60/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0582
+  Avg Validation Loss: 0.0862
+  Time Elapsed: 2175.18s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0862)
+Epoch 60 checkpoint saved to ./my_models/ithemal_bhive_skl_epoch_60.pt
+Epoch 61/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0577
+  Avg Validation Loss: 0.0863
+  Time Elapsed: 2210.04s
+--------------------------------------------------
+Epoch 62/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0575
+  Avg Validation Loss: 0.0865
+  Time Elapsed: 2245.37s
+--------------------------------------------------
+Epoch 63/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0571
+  Avg Validation Loss: 0.0866
+  Time Elapsed: 2281.78s
+--------------------------------------------------
+Epoch 64/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0568
+  Avg Validation Loss: 0.0872
+  Time Elapsed: 2318.35s
+--------------------------------------------------
+Epoch 65/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0564
+  Avg Validation Loss: 0.0888
+  Time Elapsed: 2356.16s
+--------------------------------------------------
+Epoch 66/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0561
+  Avg Validation Loss: 0.0869
+  Time Elapsed: 2391.66s
+--------------------------------------------------
+Epoch 67/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0558
+  Avg Validation Loss: 0.0875
+  Time Elapsed: 2427.98s
+--------------------------------------------------
+Epoch 68/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0557
+  Avg Validation Loss: 0.0870
+  Time Elapsed: 2464.70s
+--------------------------------------------------
+Epoch 69/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0552
+  Avg Validation Loss: 0.0874
+  Time Elapsed: 2502.16s
+--------------------------------------------------
+Epoch 70/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0549
+  Avg Validation Loss: 0.0872
+  Time Elapsed: 2539.81s
+--------------------------------------------------
+Epoch 71/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0545
+  Avg Validation Loss: 0.0873
+  Time Elapsed: 2575.63s
+--------------------------------------------------
+Epoch 72/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0543
+  Avg Validation Loss: 0.0870
+  Time Elapsed: 2612.44s
+--------------------------------------------------
+Epoch 73/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0540
+  Avg Validation Loss: 0.0871
+  Time Elapsed: 2648.07s
+--------------------------------------------------
+Epoch 74/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0540
+  Avg Validation Loss: 0.0859
+  Time Elapsed: 2683.08s
+--------------------------------------------------
+New best model saved to ./my_models/ithemal_bhive_skl_best.pt (Val Loss: 0.0859)
+Epoch 75/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0535
+  Avg Validation Loss: 0.0867
+  Time Elapsed: 2718.14s
+--------------------------------------------------
+Epoch 76/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0533
+  Avg Validation Loss: 0.0874
+  Time Elapsed: 2753.78s
+--------------------------------------------------
+Epoch 77/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0530
+  Avg Validation Loss: 0.0868
+  Time Elapsed: 2788.26s
+--------------------------------------------------
+Epoch 78/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0527
+  Avg Validation Loss: 0.0869
+  Time Elapsed: 2822.94s
+--------------------------------------------------
+Epoch 79/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0524
+  Avg Validation Loss: 0.0875
+  Time Elapsed: 2857.44s
+--------------------------------------------------
+Epoch 80/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0524
+  Avg Validation Loss: 0.0879
+  Time Elapsed: 2892.14s
+--------------------------------------------------
+Epoch 80 checkpoint saved to ./my_models/ithemal_bhive_skl_epoch_80.pt
+Epoch 81/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0521
+  Avg Validation Loss: 0.0872
+  Time Elapsed: 2927.47s
+--------------------------------------------------
+Epoch 82/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0517
+  Avg Validation Loss: 0.0867
+  Time Elapsed: 2962.56s
+--------------------------------------------------
+Epoch 83/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0516
+  Avg Validation Loss: 0.0860
+  Time Elapsed: 2998.48s
+--------------------------------------------------
+Epoch 84/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0513
+  Avg Validation Loss: 0.0878
+  Time Elapsed: 3034.45s
+--------------------------------------------------
+Epoch 85/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0510
+  Avg Validation Loss: 0.0875
+  Time Elapsed: 3070.17s
+--------------------------------------------------
+Epoch 86/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0507
+  Avg Validation Loss: 0.0870
+  Time Elapsed: 3105.97s
+--------------------------------------------------
+Epoch 87/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0506
+  Avg Validation Loss: 0.0879
+  Time Elapsed: 3140.70s
+--------------------------------------------------
+Epoch 88/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0503
+  Avg Validation Loss: 0.0868
+  Time Elapsed: 3176.14s
+--------------------------------------------------
+Epoch 89/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0501
+  Avg Validation Loss: 0.0867
+  Time Elapsed: 3211.42s
+--------------------------------------------------
+Epoch 90/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0500
+  Avg Validation Loss: 0.0881
+  Time Elapsed: 3246.38s
+--------------------------------------------------
+Epoch 91/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0499
+  Avg Validation Loss: 0.0876
+  Time Elapsed: 3282.43s
+--------------------------------------------------
+Epoch 92/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0498
+  Avg Validation Loss: 0.0879
+  Time Elapsed: 3318.49s
+--------------------------------------------------
+Epoch 93/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0494
+  Avg Validation Loss: 0.0885
+  Time Elapsed: 3353.60s
+--------------------------------------------------
+Epoch 94/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0490
+  Avg Validation Loss: 0.0876
+  Time Elapsed: 3388.09s
+--------------------------------------------------
+Epoch 95/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0489
+  Avg Validation Loss: 0.0878
+  Time Elapsed: 3424.26s
+--------------------------------------------------
+Epoch 96/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0488
+  Avg Validation Loss: 0.0881
+  Time Elapsed: 3459.98s
+--------------------------------------------------
+Epoch 97/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0488
+  Avg Validation Loss: 0.0888
+  Time Elapsed: 3494.86s
+--------------------------------------------------
+Epoch 98/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0485
+  Avg Validation Loss: 0.0878
+  Time Elapsed: 3531.80s
+--------------------------------------------------
+Epoch 99/200 Summary:                                                                                                                                                                                                                                                                                             
+  Avg Training Loss: 0.0482
+  Avg Validation Loss: 0.0879
+  Time Elapsed: 3566.91s
+--------------------------------------------------
+Epoch 100/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0482
+  Avg Validation Loss: 0.0876
+  Time Elapsed: 3602.94s
+--------------------------------------------------
+Epoch 100 checkpoint saved to ./my_models/ithemal_bhive_skl_epoch_100.pt
+Epoch 101/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0480
+  Avg Validation Loss: 0.0873
+  Time Elapsed: 3639.34s
+--------------------------------------------------
+Epoch 102/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0480
+  Avg Validation Loss: 0.0875
+  Time Elapsed: 3676.06s
+--------------------------------------------------
+Epoch 103/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0476
+  Avg Validation Loss: 0.0886
+  Time Elapsed: 3711.48s
+--------------------------------------------------
+Epoch 104/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0473
+  Avg Validation Loss: 0.0887
+  Time Elapsed: 3748.05s
+--------------------------------------------------
+Epoch 105/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0471
+  Avg Validation Loss: 0.0872
+  Time Elapsed: 3784.65s
+--------------------------------------------------
+Epoch 106/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0471
+  Avg Validation Loss: 0.0887
+  Time Elapsed: 3821.48s
+--------------------------------------------------
+Epoch 107/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0469
+  Avg Validation Loss: 0.0880
+  Time Elapsed: 3858.88s
+--------------------------------------------------
+Epoch 108/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0468
+  Avg Validation Loss: 0.0876
+  Time Elapsed: 3896.26s
+--------------------------------------------------
+Epoch 109/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0468
+  Avg Validation Loss: 0.0872
+  Time Elapsed: 3932.06s
+--------------------------------------------------
+Epoch 110/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0464
+  Avg Validation Loss: 0.0881
+  Time Elapsed: 3968.08s
+--------------------------------------------------
+Epoch 111/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0463
+  Avg Validation Loss: 0.0885
+  Time Elapsed: 4003.86s
+--------------------------------------------------
+Epoch 112/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0460
+  Avg Validation Loss: 0.0878
+  Time Elapsed: 4040.01s
+--------------------------------------------------
+Epoch 113/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0460
+  Avg Validation Loss: 0.0881
+  Time Elapsed: 4076.60s
+--------------------------------------------------
+Epoch 114/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0458
+  Avg Validation Loss: 0.0882
+  Time Elapsed: 4112.47s
+--------------------------------------------------
+Epoch 115/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0457
+  Avg Validation Loss: 0.0876
+  Time Elapsed: 4149.86s
+--------------------------------------------------
+Epoch 116/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0454
+  Avg Validation Loss: 0.0882
+  Time Elapsed: 4187.06s
+--------------------------------------------------
+Epoch 117/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0455
+  Avg Validation Loss: 0.0886
+  Time Elapsed: 4224.41s
+--------------------------------------------------
+Epoch 118/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0453
+  Avg Validation Loss: 0.0889
+  Time Elapsed: 4262.05s
+--------------------------------------------------
+Epoch 119/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0452
+  Avg Validation Loss: 0.0896
+  Time Elapsed: 4298.57s
+--------------------------------------------------
+Epoch 120/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0451
+  Avg Validation Loss: 0.0884
+  Time Elapsed: 4334.90s
+--------------------------------------------------
+Epoch 120 checkpoint saved to ./my_models/ithemal_bhive_skl_epoch_120.pt
+Epoch 121/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0449
+  Avg Validation Loss: 0.0886
+  Time Elapsed: 4370.26s
+--------------------------------------------------
+Epoch 122/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0448
+  Avg Validation Loss: 0.0889
+  Time Elapsed: 4406.88s
+--------------------------------------------------
+Epoch 123/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0448
+  Avg Validation Loss: 0.0896
+  Time Elapsed: 4443.35s
+--------------------------------------------------
+Epoch 124/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0447
+  Avg Validation Loss: 0.0896
+  Time Elapsed: 4477.96s
+--------------------------------------------------
+Epoch 125/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0445
+  Avg Validation Loss: 0.0881
+  Time Elapsed: 4513.08s
+--------------------------------------------------
+Epoch 126/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0443
+  Avg Validation Loss: 0.0894
+  Time Elapsed: 4549.97s
+--------------------------------------------------
+Epoch 127/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0442
+  Avg Validation Loss: 0.0886
+  Time Elapsed: 4586.34s
+--------------------------------------------------
+Epoch 128/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0440
+  Avg Validation Loss: 0.0886
+  Time Elapsed: 4624.29s
+--------------------------------------------------
+Epoch 129/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0440
+  Avg Validation Loss: 0.0888
+  Time Elapsed: 4660.37s
+--------------------------------------------------
+Epoch 130/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0438
+  Avg Validation Loss: 0.0884
+  Time Elapsed: 4696.64s
+--------------------------------------------------
+Epoch 131/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0439
+  Avg Validation Loss: 0.0887
+  Time Elapsed: 4732.29s
+--------------------------------------------------
+Epoch 132/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0435
+  Avg Validation Loss: 0.0887
+  Time Elapsed: 4767.74s
+--------------------------------------------------
+Epoch 133/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0434
+  Avg Validation Loss: 0.0883
+  Time Elapsed: 4802.88s
+--------------------------------------------------
+Epoch 134/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0431
+  Avg Validation Loss: 0.0897
+  Time Elapsed: 4839.37s
+--------------------------------------------------
+Epoch 135/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0431
+  Avg Validation Loss: 0.0886
+  Time Elapsed: 4875.78s
+--------------------------------------------------
+Epoch 136/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0431
+  Avg Validation Loss: 0.0885
+  Time Elapsed: 4912.60s
+--------------------------------------------------
+Epoch 137/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0429
+  Avg Validation Loss: 0.0893
+  Time Elapsed: 4950.45s
+--------------------------------------------------
+Epoch 138/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0428
+  Avg Validation Loss: 0.0890
+  Time Elapsed: 4986.87s
+--------------------------------------------------
+Epoch 164/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0404
+  Avg Validation Loss: 0.0896
+  Time Elapsed: 5937.83s
+--------------------------------------------------
+Epoch 165/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0403
+  Avg Validation Loss: 0.0892
+  Time Elapsed: 5973.73s
+--------------------------------------------------
+Epoch 166/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0403
+  Avg Validation Loss: 0.0887
+  Time Elapsed: 6010.37s
+--------------------------------------------------
+Epoch 167/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0402
+  Avg Validation Loss: 0.0906
+  Time Elapsed: 6046.76s
+--------------------------------------------------
+Epoch 168/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0405
+  Avg Validation Loss: 0.0895
+  Time Elapsed: 6082.76s
+--------------------------------------------------
+Epoch 169/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0401
+  Avg Validation Loss: 0.0894
+  Time Elapsed: 6119.17s
+--------------------------------------------------
+Epoch 170/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0400
+  Avg Validation Loss: 0.0896
+  Time Elapsed: 6155.83s
+--------------------------------------------------
+Epoch 171/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0399
+  Avg Validation Loss: 0.0895
+  Time Elapsed: 6191.42s
+--------------------------------------------------
+Epoch 172/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0399
+  Avg Validation Loss: 0.0895
+  Time Elapsed: 6227.91s
+--------------------------------------------------
+Epoch 173/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0396
+  Avg Validation Loss: 0.0892
+  Time Elapsed: 6264.15s
+--------------------------------------------------
+Epoch 174/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0397
+  Avg Validation Loss: 0.0901
+  Time Elapsed: 6302.15s
+--------------------------------------------------
+Epoch 175/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0397
+  Avg Validation Loss: 0.0894
+  Time Elapsed: 6337.99s
+--------------------------------------------------
+Epoch 176/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0395
+  Avg Validation Loss: 0.0893
+  Time Elapsed: 6374.11s
+--------------------------------------------------
+Epoch 177/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0395
+  Avg Validation Loss: 0.0904
+  Time Elapsed: 6410.94s
+--------------------------------------------------
+Epoch 178/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0395
+  Avg Validation Loss: 0.0901
+  Time Elapsed: 6447.75s
+--------------------------------------------------
+Epoch 179/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0393
+  Avg Validation Loss: 0.0895
+  Time Elapsed: 6484.26s
+--------------------------------------------------
+Epoch 180/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0392
+  Avg Validation Loss: 0.0896
+  Time Elapsed: 6520.17s
+--------------------------------------------------
+Epoch 180 checkpoint saved to ./my_models/ithemal_bhive_skl_epoch_180.pt
+Epoch 181/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0391
+  Avg Validation Loss: 0.0893
+  Time Elapsed: 6556.38s
+--------------------------------------------------
+Epoch 182/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0390
+  Avg Validation Loss: 0.0896
+  Time Elapsed: 6592.36s
+--------------------------------------------------
+Epoch 183/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0390
+  Avg Validation Loss: 0.0894
+  Time Elapsed: 6628.38s
+--------------------------------------------------
+Epoch 184/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0390
+  Avg Validation Loss: 0.0900
+  Time Elapsed: 6666.25s
+--------------------------------------------------
+Epoch 185/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0390
+  Avg Validation Loss: 0.0904
+  Time Elapsed: 6703.84s
+--------------------------------------------------
+Epoch 186/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0390
+  Avg Validation Loss: 0.0901
+  Time Elapsed: 6740.94s
+--------------------------------------------------
+Epoch 187/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0387
+  Avg Validation Loss: 0.0899
+  Time Elapsed: 6777.71s
+--------------------------------------------------
+Epoch 188/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0387
+  Avg Validation Loss: 0.0910
+  Time Elapsed: 6815.17s
+--------------------------------------------------
+Epoch 189/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0386
+  Avg Validation Loss: 0.0890
+  Time Elapsed: 6850.69s
+--------------------------------------------------
+Epoch 190/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0385
+  Avg Validation Loss: 0.0899
+  Time Elapsed: 6887.38s
+--------------------------------------------------
+Epoch 191/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0385
+  Avg Validation Loss: 0.0898
+  Time Elapsed: 6924.08s
+--------------------------------------------------
+Epoch 192/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0384
+  Avg Validation Loss: 0.0893
+  Time Elapsed: 6961.75s
+--------------------------------------------------
+Epoch 193/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0384
+  Avg Validation Loss: 0.0902
+  Time Elapsed: 7000.09s
+--------------------------------------------------
+Epoch 194/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0383
+  Avg Validation Loss: 0.0901
+  Time Elapsed: 7037.33s
+--------------------------------------------------
+Epoch 195/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0383
+  Avg Validation Loss: 0.0902
+  Time Elapsed: 7075.07s
+--------------------------------------------------
+Epoch 196/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0383
+  Avg Validation Loss: 0.0903
+  Time Elapsed: 7113.06s
+--------------------------------------------------
+Epoch 197/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0383
+  Avg Validation Loss: 0.0906
+  Time Elapsed: 7149.99s
+--------------------------------------------------
+Epoch 198/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0381
+  Avg Validation Loss: 0.0892
+  Time Elapsed: 7186.56s
+--------------------------------------------------
+Epoch 199/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0379
+  Avg Validation Loss: 0.0897
+  Time Elapsed: 7223.84s
+--------------------------------------------------
+Epoch 200/200 Summary:                                                                                                                                                                                                                                                                                            
+  Avg Training Loss: 0.0379
+  Avg Validation Loss: 0.0898
+  Time Elapsed: 7261.60s
+--------------------------------------------------
+Epoch 200 checkpoint saved to ./my_models/ithemal_bhive_skl_epoch_200.pt
+Training finished.
+Total Training Time: 7261.67s
+Best Validation Loss achieved: 0.0859
